@@ -20,10 +20,14 @@ export default function TileControls({ x, y, z, exists, onGenerate, onRegenerate
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log(`🔘 Delete button clicked in TileControls`);
     setLoading(true);
     try {
+      console.log(`🔘 Calling onDelete function`);
       await onDelete();
+      console.log(`🔘 onDelete completed successfully`);
       setDeleteOpen(false);
     } catch (error) {
       console.error("Failed to delete tile:", error);
@@ -111,15 +115,17 @@ export default function TileControls({ x, y, z, exists, onGenerate, onRegenerate
                         Cancel
                       </button>
                     </AlertDialog.Cancel>
-                    <AlertDialog.Action asChild>
-                      <button 
-                        className="px-4 py-2 rounded text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
-                        onClick={handleDelete}
-                        disabled={loading}
-                      >
-                        {loading ? "Deleting..." : "Delete"}
-                      </button>
-                    </AlertDialog.Action>
+                    <button 
+                      className="px-4 py-2 rounded text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(e);
+                      }}
+                      disabled={loading}
+                      type="button"
+                    >
+                      {loading ? "Deleting..." : "Delete"}
+                    </button>
                   </div>
                 </AlertDialog.Content>
               </AlertDialog.Portal>

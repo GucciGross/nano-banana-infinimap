@@ -124,14 +124,22 @@ export default function MapClient() {
 
   // Handle tile deletion
   const handleDelete = useCallback(async (x: number, y: number) => {
+    console.log(`🗑️ Attempting to delete tile at (${x}, ${y})`);
     try {
       const response = await fetch(`/api/delete/${MAX_Z}/${x}/${y}`, {
         method: "DELETE"
       });
+      console.log(`🗑️ Delete response:`, response.status, response.ok);
       
       if (response.ok) {
-        await refreshVisibleTiles();
+        // Close the tile menu immediately
+        setSelectedTile(null);
+        // Update tile existence state immediately
         setTileExists(prev => ({ ...prev, [`${x},${y}`]: false }));
+        // Refresh tiles with a small delay to ensure database update is complete
+        setTimeout(async () => {
+          await refreshVisibleTiles();
+        }, 100);
       }
     } catch (error) {
       console.error("Failed to delete tile:", error);
@@ -454,7 +462,8 @@ export default function MapClient() {
                 // Delay a moment to ensure filesystem flush and ETag update.
                 setTimeout(() => { 
                   void refreshVisibleTiles();
-                  setTileExists(prev => ({ ...prev, [`${selectedTile.x},${selectedTile.y}`]: true }));
+                  // Re-check tile existence after refresh
+                  void checkTileExists(selectedTile.x, selectedTile.y);
                 }, 50);
               }}
               
